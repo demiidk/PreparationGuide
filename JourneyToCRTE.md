@@ -134,6 +134,12 @@ PS C:\Users\0xdemiafk\Documents\> Invoke-Mimikarz -Command "'sekurlsa::ekeys'"
 
 ## Step 03 - Active Directory enumeration
 
+>:eye: Useful tools for enumerating
+>
+>PowerView -> Great tool for Active Directory enumeration.
+>ADModule -> Signed DLL used for Active Directory management.
+>PowerUPSQL -> Dedicated tool for auditing MSSQL.
+
 >:warning: Don't try to get domain admin user quickly, rarely you can own a domain admin account.
 
 Enumerate all GPOs using "Restircted Groups"
