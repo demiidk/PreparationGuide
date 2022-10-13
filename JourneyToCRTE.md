@@ -175,4 +175,14 @@ Enumerate GPO applied to an OU:
 PS C:\Users\0xdemiafk\Documents\> Get-DomainGPO -Identity "{FCE16496-C744-4E46-AC89-2D01D76EAD68}"
 ```
 
+Enumerate MSSQL servers and instances:
+```
+PS C:\Users\0xdemiafk\Documents\> Get-SQLInstanceBroadcast -Verbose
+```
+
+Test if MSSQL is accessible:
+
+```
+PS C:\Users\0xdemiafk\Documents\> Get-SQLConnectionTest -Instance SQLSRV01\SQL -Verbose
+```
 
